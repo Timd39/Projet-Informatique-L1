@@ -1,8 +1,12 @@
 import yfinance as yf
 import pandas as pd
 
+PERIODES_VALIDES = ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+INTERVALLES_VALIDES = ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
+
+
 #dictionnaire contennant les action 
-mes_actions = {
+MARKET = {
     "Apple": "AAPL",
     "Microsoft": "MSFT",
     "Nvidia": "NVDA",
@@ -61,41 +65,49 @@ mes_actions = {
 
 
 #Vérification de si l'action est dans le dictionnaire
-def verfi_action(action_choisie) :
-    if action_choisie in mes_actions:
-        return True
-    else :
-        return False
+def verifier_action(action_choisie)->bool :
+    return action_choisie in MARKET
     
 #Récupération de l'historique d'une action en fonction de sa période (temps total) et de son intervalle (temps à laquelle il prend les bougies sur la période)
-def recuperer_historique(action_choisie,periode,intervalle):
-    try :
-        action_choisie = mes_actions[action_choisie]
-        action_choisie = yf.Ticker(action_choisie)
+def recuperer_historique(action_choisie,periode : str,intervalle : str)-> pd.Dataframe:
+    if not verifier_action(action_choisie):
+        raise ValueError(f"'{action_choisie}' n'est pas dans le dictionnaire.")
     
+    if periode not in PERIODES_VALIDES:
+        raise ValueError(f"Période invalide : '{periode}'. Valeurs acceptées : {PERIODES_VALIDES}")
+    
+    if intervalle not in INTERVALLES_VALIDES:
+        raise ValueError(f"Intervalle invalide : '{intervalle}'. Valeurs acceptées : {INTERVALLES_VALIDES}")
+    try :
+
+        ticker = MARKET[action_choisie]
+        action = yf.Ticker(ticker)
         historique = action_choisie.history(period =periode,interval =intervalle)
     
         return historique
+    
     except Exception as e:
         raise ValueError(f"Erreur lors de la récupération de {action_choisie} pour une période de {periode} et un intervalle de {intervalle}")
 
     
 
 #Récupération du prix actuel de l'action
-def recuperer_prix_actuel(action_choisie):
-    if verfi_action(action_choisie):
-        try :
-            action_choisie = mes_actions[action_choisie]
-            action = yf.Ticker(action_choisie)
+def recuperer_prix_actuel(action_choisie,periode : str)->float:
+    if not verifier_action(action_choisie):
+        raise ValueError(f"{action_choisie}n'est pas dans le dictionnaire")
+    if periode not in PERIODES_VALIDES:
+        raise ValueError(f"Période invalide : {periode}.")
+    try :
+        ticker = MARKET[action_choisie]
+        action = yf.Ticker(ticker)
 
-            # permet de recuperer historique de l'action prix le plus bas/haut a l'ouverture/fermeture
-            donnee_action = action.history(period = "1m")
+        # permet de recuperer historique de l'action prix le plus bas/haut a l'ouverture/fermeture
+        donnee_action = action.history(period = periode)
 
-            #recupere le dernier prix d'une action 
-            prix_actuel = donnee_action['Close'].iloc[-1]
+        #recupere le dernier prix d'une action 
+        prix_actuel = donnee_action['Close'].iloc[-1]
         
-            return float(prix_actuel)
-        except Exception as e:
-            raise ValueError(f"Erreur, impossible de récupérer le prix actuel pour {action_choisie}")
-    else :
-        return TypeError(f"La vérification de l'action a retournée : {verfi_action(action_choisie)}")
+        return float(prix_actuel)
+    
+    except Exception as e:
+        raise ValueError(f"Erreur, impossible de récupérer le prix actuel pour {action_choisie}")
