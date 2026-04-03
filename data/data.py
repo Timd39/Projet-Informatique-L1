@@ -1,4 +1,3 @@
-
 import yfinance as yf
 import pandas as pd
 
@@ -61,32 +60,42 @@ mes_actions = {
 }
 
 
-#verifie si l'action est dans le dictionnaire d'action 
+#Vérification de si l'action est dans le dictionnaire
 def verfi_action(action_choisie) :
     if action_choisie in mes_actions:
         return True
-    else:
+    else :
         return False
     
-    
+#Récupération de l'historique d'une action en fonction de sa période (temps total) et de son intervalle (temps à laquelle il prend les bougies sur la période)
 def recuperer_historique(action_choisie,periode,intervalle):
+    try :
+        action_choisie = mes_actions[action_choisie]
+        action_choisie = yf.Ticker(action_choisie)
     
-    action_choisie = mes_actions[action_choisie]
-    action_choisie = yf.Ticker(action_choisie)
+        historique = action_choisie.history(period =periode,interval =intervalle)
     
-    historique = action_choisie.history(period =periode,interval =intervalle)
-    
-    return historique
+        return historique
+    except Exception as e:
+        raise ValueError(f"Erreur lors de la récupération de {action_choisie} pour une période de {periode} et un intervalle de {intervalle}")
+
     
 
+#Récupération du prix actuel de l'action
 def recuperer_prix_actuel(action_choisie):
-    if verfi_action(action_choisie) :
-        action_choisie = mes_actions[action_choisie]
-        action = yf.Ticker(action_choisie)
-        donnee_action = action.history(period = "1m") # permet de recuperer historique de l'action prix le plus bas/haut a l'ouverture/fermeture
+    if verfi_action(action_choisie):
+        try :
+            action_choisie = mes_actions[action_choisie]
+            action = yf.Ticker(action_choisie)
+
+            # permet de recuperer historique de l'action prix le plus bas/haut a l'ouverture/fermeture
+            donnee_action = action.history(period = "1m")
+
+            #recupere le dernier prix d'une action 
+            prix_actuel = donnee_action['Close'].iloc[-1]
         
-        prix_actuel = donnee_action['Close'].iloc[-1] #recupere le dernier prix d'une action 
-        
-        return float(prix_actuel)
+            return float(prix_actuel)
+        except Exception as e:
+            raise ValueError(f"Erreur, impossible de récupérer le prix actuel pour {action_choisie}")
     else :
-        return -1
+        return TypeError(f"La vérification de l'action a retournée : {verfi_action(action_choisie)}")
