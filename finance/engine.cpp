@@ -21,7 +21,7 @@ extern "C"{
         return montant * COMMISSION;
     }
 
-    /*Calcul du total net = brut + commission*/
+    /*Calcul du total net d'achat  = brut + commission*/
     double total_net_achat(int nb_trades, double prix_achat){
          if(nb_trades<=0 || prix_achat <=0){
             return ERROR_CODE;
@@ -30,7 +30,8 @@ extern "C"{
         double commission = calculer_commission(prix_achat,nb_trades);
         return brut + commission;
     }
-
+    
+    /*Calcul du total net de vente = brut - commission*/
     double total_net_vente(int nb_trades, double prix_vente){
         if(nb_trades<=0 || prix_vente<=0){
             return ERROR_CODE;
