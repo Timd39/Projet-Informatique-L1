@@ -1,0 +1,16 @@
+[theme]
+base="dark"
+
+# Cyan / Menthe fluo 
+primaryColor="#06adc0"
+
+# Le fond principal : Bleu ardoise très foncé
+backgroundColor="#0F172A"
+
+# Le menu latéral : Un ton juste au-dessus
+secondaryBackgroundColor="#1E293B"
+
+# Le texte : Gris clair bleuté
+textColor="#E2E8F0"
+
+font="sans serif"
