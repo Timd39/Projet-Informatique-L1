@@ -12,7 +12,7 @@ def connection():
     mail = st.text_input("Adresse e-mail")
     password = st.text_input("Mot de passe",type="password")
     
-    if st.button('ce connecter.') :
+    if st.button('Ce connecter') :
         compte_trouver = base_utilisateurs[base_utilisateurs["email"]==mail]
         
         if compte_trouver.empty :
@@ -23,7 +23,9 @@ def connection():
             
             if vrai_mot_de_passe == password :
                 st.session_state["connect"] = True
-                st.rerun()    
+                st.rerun() 
+                
+                   
             else :
                 st.error("Identifiants incorrects. Veuillez réessayer.")
                 
@@ -34,18 +36,46 @@ def connection():
         
         
         
-def cree_compte():
-    prenom = st.text_input("quel est votre nom ?","Bruce")
-    nom =st.text_input("quel est votre nom ?","Wayne")
+def cree_compte(): 
+    prenom = st.text_input("Prenom")
+    nom =st.text_input("Nom")
+    age = st.number_input("Age",1)
+    nouv_compte_mail = st.text_input("Adresse e-mail")
+    nouv_compte_pass = st.text_input("Mot de passe",type="password")
     
-    nouv_compte_mail = st.text_input("Adresse e-mail","Entrez votre adresse e-mail")
-    nouv_compte_pass = st.text_input("Mot de passe","Saisissez votre mot de passe",type="password")
+    if st.button('creé un compte') :
+        compte_trouver = base_utilisateurs[base_utilisateurs["email"]==nouv_compte_mail]
+        
+        if not compte_trouver.empty :
+            st.error("Cette adresse-mail possede deja un compte veilleur vous connecter")
+            st.session_state.page_actuelle = "connexion"
+                
+        else : 
+            if age <18 :
+                st.info("Vous devez avoir plus de 18 ans pour creé un compte")  
+                
+            else : 
+                # On trouve le numéro de la nouvelle ligne à créer à la fin du tableau
+                nouvelle_ligne = len(base_utilisateurs)
+
+                # On y insère toutes les données d'un coup
+                base_utilisateurs.loc[nouvelle_ligne] = {
+                    "email": nouv_compte_mail,
+                    "mot_de_passe": nouv_compte_pass,
+                    "nom": nom,
+                    "prenom": prenom,
+                    "age" : age
+                }
+                    
+                base_utilisateurs.to_csv("data/compte.csv", index=False)
+                st.success("Votre compte a ete creé veiller vous connecter ")
+                st.session_state.page_actuelle = "connexion"
+                st.rerun()
+        
+    if st.button('Ce connecter') :
+        st.session_state.page_actuelle = "connexion"
+        st.rerun()
     
-    
-    base_utilisateurs["email"]= nouv_compte_mail
-    base_utilisateurs["mot_de_passe"] = nouv_compte_pass
-    base_utilisateurs["nom"] = nom
-    base_utilisateurs["prenom"] = prenom
 
 
 
@@ -85,12 +115,13 @@ def affiche_graphique(action_choisie) :
   
 if "page_actuelle" not in st.session_state:
     st.session_state.page_actuelle = "connexion"
+    
 if "connect"not in st.session_state :
     st.session_state["connect"] = False
 
 if st.session_state.page_actuelle == "connexion":      
     if st.session_state["connect"] == False :
-        connection()
+       connection()
         
 if st.session_state.page_actuelle == "nouvelle_utilisateur" :
     cree_compte()
